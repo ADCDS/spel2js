@@ -1,3 +1,5 @@
+import {SpelNode} from "./SpelNode";
+
 const javaString = {
     /**
      * Mimics:
@@ -64,7 +66,7 @@ const javaString = {
     }
 };
 
-// Create a single mapping for both type references.
+// Create a single mapping for both type references!
 const typeMapping = {
     "String": javaString,
     "java.lang.String": javaString

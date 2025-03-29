@@ -4766,6 +4766,10 @@ var OpBetween = exports.OpBetween = {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.TypeReference = undefined;
+
+var _SpelNode = __webpack_require__(0);
+
 var javaString = {
     /**
      * Mimics:
@@ -4836,7 +4840,7 @@ var javaString = {
     }
 };
 
-// Create a single mapping for both type references.
+// Create a single mapping for both type references!
 var typeMapping = {
     "String": javaString,
     "java.lang.String": javaString
@@ -4845,7 +4849,7 @@ var typeMapping = {
 var TypeReference = exports.TypeReference = {
     create: function create(position, typeNode, _dims) {
         // Create the node as usual.
-        var node = SpelNode.create('typeref', position, typeNode);
+        var node = _SpelNode.SpelNode.create('typeref', position, typeNode);
 
         // Override getValue to resolve the type reference using our mapping.
         node.getValue = function (state) {
