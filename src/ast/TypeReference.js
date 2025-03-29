@@ -80,7 +80,8 @@ export var TypeReference = {
         // Override getValue to resolve the type reference using our mapping.
         node.getValue = function(state) {
             // Assume the first child node returns the type name as a string.
-            let typeName = node.children[0].getValue(state);
+            let typeName = node.getChildren()[0].getChildren()[0].getRaw();
+
             if (typeMapping.hasOwnProperty(typeName)) {
                 return typeMapping[typeName];
             }
