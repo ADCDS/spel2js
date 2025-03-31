@@ -21,8 +21,8 @@
  * @since 0.2.0
  */
 
-import { Token } from './Token';
-import { TokenKind } from './TokenKind';
+import {Token} from './Token';
+import {TokenKind} from './TokenKind';
 
 var ALTERNATIVE_OPERATOR_NAMES = ['DIV', 'EQ', 'GE', 'GT', 'LE', 'LT', 'MOD', 'NE', 'NOT'],
     FLAGS = [],
@@ -66,12 +66,14 @@ function tokenize(inputData) {
             ch = toProcess[pos];
             if (isAlphabetic(ch)) {
                 lexIdentifier();
-            } else {
+            }
+            else {
                 switch (ch) {
                     case '+':
                         if (isTwoCharToken(TokenKind.INC)) {
                             pushPairToken(TokenKind.INC);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.PLUS);
                         }
                         break;
@@ -81,7 +83,8 @@ function tokenize(inputData) {
                     case '-':
                         if (isTwoCharToken(TokenKind.DEC)) {
                             pushPairToken(TokenKind.DEC);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.MINUS);
                         }
                         break;
@@ -130,73 +133,83 @@ function tokenize(inputData) {
                     case '^':
                         if (isTwoCharToken(TokenKind.SELECT_FIRST)) {
                             pushPairToken(TokenKind.SELECT_FIRST);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.POWER);
                         }
                         break;
                     case '!':
                         if (isTwoCharToken(TokenKind.NE)) {
                             pushPairToken(TokenKind.NE);
-                        } else if (isTwoCharToken(TokenKind.PROJECT)) {
+                        }
+                        else if (isTwoCharToken(TokenKind.PROJECT)) {
                             pushPairToken(TokenKind.PROJECT);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.NOT);
                         }
                         break;
                     case '=':
                         if (isTwoCharToken(TokenKind.EQ)) {
                             pushPairToken(TokenKind.EQ);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.ASSIGN);
                         }
                         break;
                     case '&':
                         if (!isTwoCharToken(TokenKind.SYMBOLIC_AND)) {
-                            throw {
-                                name: 'SpelParseException',
-                                message: 'Missing character \'&\' in expression (' + expressionString + ') at position ' + pos,
-                            };
+                            let error = new Error('Missing character \'&\' in expression (' + expressionString + ') at position ' + pos);
+                            error.name = 'SpelParseException';
+                            error.position = pos;
+                            throw error;
                         }
                         pushPairToken(TokenKind.SYMBOLIC_AND);
                         break;
                     case '|':
                         if (!isTwoCharToken(TokenKind.SYMBOLIC_OR)) {
-                            throw {
-                                name: 'SpelParseException',
-                                message: 'Missing character \'|\' in expression (' + expressionString + ') at position ' + pos,
-                            };
+                            let error = new Error('Missing character \'|\' in expression (' + expressionString + ') at position ' + pos);
+                            error.name = 'SpelParseException';
+                            error.position = pos;
+                            throw error;
                         }
                         pushPairToken(TokenKind.SYMBOLIC_OR);
                         break;
                     case '?':
                         if (isTwoCharToken(TokenKind.SELECT)) {
                             pushPairToken(TokenKind.SELECT);
-                        } else if (isTwoCharToken(TokenKind.ELVIS)) {
+                        }
+                        else if (isTwoCharToken(TokenKind.ELVIS)) {
                             pushPairToken(TokenKind.ELVIS);
-                        } else if (isTwoCharToken(TokenKind.SAFE_NAVI)) {
+                        }
+                        else if (isTwoCharToken(TokenKind.SAFE_NAVI)) {
                             pushPairToken(TokenKind.SAFE_NAVI);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.QMARK);
                         }
                         break;
                     case '$':
                         if (isTwoCharToken(TokenKind.SELECT_LAST)) {
                             pushPairToken(TokenKind.SELECT_LAST);
-                        } else {
+                        }
+                        else {
                             lexIdentifier();
                         }
                         break;
                     case '>':
                         if (isTwoCharToken(TokenKind.GE)) {
                             pushPairToken(TokenKind.GE);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.GT);
                         }
                         break;
                     case '<':
                         if (isTwoCharToken(TokenKind.LE)) {
                             pushPairToken(TokenKind.LE);
-                        } else {
+                        }
+                        else {
                             pushCharToken(TokenKind.LT);
                         }
                         break;
@@ -230,15 +243,19 @@ function tokenize(inputData) {
                         pos += 1; // will take us to the end
                         break;
                     case '\\':
-                        throw {
-                            name: 'SpelParseException',
-                            message: 'Unexpected escape character in expression (' + expressionString + ') at position ' + pos,
-                        };
+                    {
+                        let error = new Error('Unexpected escape character in expression (' + expressionString + ') at position ' + pos);
+                        error.name = 'SpelParseException';
+                        error.position = pos;
+                        throw error;
+                    }
                     default:
-                        throw {
-                            name: 'SpelParseException',
-                            message: 'Cannot handle character \'' + ch + '\' in expression (' + expressionString + ') at position ' + pos,
-                        };
+                    {
+                        let error = new Error('Cannot handle character \'' + ch + '\' in expression (' + expressionString + ') at position ' + pos);
+                        error.name = 'SpelParseException';
+                        error.position = pos;
+                        throw error;
+                    }
                 }
             }
         }
@@ -256,21 +273,21 @@ function tokenize(inputData) {
                 // may not be the end if the char after is also a '
                 if (toProcess[pos + 1] === '\'') {
                     pos += 1; // skip over that too, and continue
-                } else {
+                }
+                else {
                     terminated = true;
                 }
             }
             if (ch.charCodeAt(0) === 0) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Non-terminating quoted string in expression (' + expressionString + ') at position ' + pos,
-                };
+                let error = new Error('Non-terminating quoted string in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
         }
         pos += 1;
         tokens.push(new Token(TokenKind.LITERAL_STRING, subarray(start, pos), start, pos));
     }
-
     function lexDoubleQuotedStringLiteral() {
         var start = pos,
             terminated = false,
@@ -283,15 +300,16 @@ function tokenize(inputData) {
                 // may not be the end if the char after is also a '
                 if (toProcess[pos + 1] === '"') {
                     pos += 1; // skip over that too, and continue
-                } else {
+                }
+                else {
                     terminated = true;
                 }
             }
             if (ch.charCodeAt(0) === 0) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Non-terminating double-quoted string in expression (' + expressionString + ') at position ' + pos,
-                };
+                let error = new Error('Non-terminating double-quoted string in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
         }
         pos += 1;
@@ -332,10 +350,25 @@ function tokenize(inputData) {
             }
             while (isHexadecimalDigit(toProcess[pos]));
             if (isChar('L', 'l')) {
-                pushHexIntToken(subarray(start + 2, pos), true, start, pos);
+                let data = subarray(start + 2, pos);
+                if (data.length === 0) {
+                    let error = new Error('Not a long in expression (' + expressionString + ') at position ' + pos);
+                    error.name = 'SpelParseException';
+                    error.position = pos;
+                    throw error;
+                }
+                pushHexIntToken(data, true, start, pos);
                 pos += 1;
-            } else {
-                pushHexIntToken(subarray(start + 2, pos), false, start, pos);
+            }
+            else {
+                let data = subarray(start + 2, pos);
+                if (data.length === 0) {
+                    let error = new Error('Not an int in expression (' + expressionString + ') at position ' + pos);
+                    error.name = 'SpelParseException';
+                    error.position = pos;
+                    throw error;
+                }
+                pushHexIntToken(data, false, start, pos);
             }
             return;
         }
@@ -375,14 +408,15 @@ function tokenize(inputData) {
         // is it a long ?
         if (isChar('L', 'l')) {
             if (isReal) { // 3.4L - not allowed
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Real cannot be long in expression (' + expressionString + ') at position ' + pos,
-                };
+                let error = new Error('Real cannot be long in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
             pushIntToken(subarray(start, endOfNumber), true, start, endOfNumber);
             pos += 1;
-        } else if (isExponentChar(toProcess[pos])) {
+        }
+        else if (isExponentChar(toProcess[pos])) {
             isReal = true; // if it wasn't before, it is now
             pos += 1;
             possibleSign = toProcess[pos];
@@ -400,12 +434,14 @@ function tokenize(inputData) {
                 isFloat = true;
                 pos += 1;
                 endOfNumber = pos;
-            } else if (isDoubleSuffix(toProcess[pos])) {
+            }
+            else if (isDoubleSuffix(toProcess[pos])) {
                 pos += 1;
                 endOfNumber = pos;
             }
             pushRealToken(subarray(start, pos), isFloat, start, pos);
-        } else {
+        }
+        else {
             ch = toProcess[pos];
             isFloat = false;
             if (isFloatSuffix(ch)) {
@@ -413,14 +449,16 @@ function tokenize(inputData) {
                 isFloat = true;
                 pos += 1;
                 endOfNumber = pos;
-            } else if (isDoubleSuffix(ch)) {
+            }
+            else if (isDoubleSuffix(ch)) {
                 isReal = true;
                 pos += 1;
                 endOfNumber = pos;
             }
             if (isReal) {
                 pushRealToken(subarray(start, endOfNumber), isFloat, start, endOfNumber);
-            } else {
+            }
+            else {
                 pushIntToken(subarray(start, endOfNumber), false, start, endOfNumber);
             }
         }
@@ -453,7 +491,8 @@ function tokenize(inputData) {
     function pushIntToken(data, isLong, start, end) {
         if (isLong) {
             tokens.push(new Token(TokenKind.LITERAL_LONG, data, start, end));
-        } else {
+        }
+        else {
             tokens.push(new Token(TokenKind.LITERAL_INT, data, start, end));
         }
     }
@@ -461,20 +500,22 @@ function tokenize(inputData) {
     function pushHexIntToken(data, isLong, start, end) {
         if (data.length === 0) {
             if (isLong) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Not a long in expression (' + expressionString + ') at position ' + pos,
-                };
-            } else {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Not an int in expression (' + expressionString + ') at position ' + pos,
-                };
+                let error = new Error('Not a long in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
+            }
+            else {
+                let error = new Error('Not an int in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
         }
         if (isLong) {
             tokens.push(new Token(TokenKind.LITERAL_HEXLONG, data, start, end));
-        } else {
+        }
+        else {
             tokens.push(new Token(TokenKind.LITERAL_HEXINT, data, start, end));
         }
     }
@@ -482,7 +523,8 @@ function tokenize(inputData) {
     function pushRealToken(data, isFloat, start, end) {
         if (isFloat) {
             tokens.push(new Token(TokenKind.LITERAL_REAL_FLOAT, data, start, end));
-        } else {
+        }
+        else {
             tokens.push(new Token(TokenKind.LITERAL_REAL, data, start, end));
         }
     }
@@ -575,5 +617,5 @@ function tokenize(inputData) {
 }
 
 export var Tokenizer = {
-    tokenize: tokenize,
+    tokenize: tokenize
 };

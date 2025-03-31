@@ -719,21 +719,17 @@ var SpelExpressionParser = exports.SpelExpressionParser = function SpelExpressio
     }
 
     function parse(expression, context) {
-        try {
-            expressionString = expression;
-            tokenStream = _Tokenizer.Tokenizer.tokenize(expression);
-            tokenStreamLength = tokenStream.length;
-            tokenStreamPointer = 0;
-            constructedNodes = [];
-            var ast = eatExpression();
-            if (moreTokens()) {
-                raiseInternalException(peekToken().startPos, 'MORE_INPUT', nextToken().toString());
-            }
-            //Assert.isTrue(this.constructedNodes.isEmpty());
-            return ast;
-        } catch (e) {
-            throw e.message;
+        expressionString = expression;
+        tokenStream = _Tokenizer.Tokenizer.tokenize(expression);
+        tokenStreamLength = tokenStream.length;
+        tokenStreamPointer = 0;
+        constructedNodes = [];
+        var ast = eatExpression();
+        if (moreTokens()) {
+            raiseInternalException(peekToken().startPos, 'MORE_INPUT', nextToken().toString());
         }
+        //Assert.isTrue(this.constructedNodes.isEmpty());
+        return ast;
     }
 
     //	expression
@@ -1542,10 +1538,12 @@ var SpelExpressionParser = exports.SpelExpressionParser = function SpelExpressio
         if (actual) {
             message += '\nActual: ' + actual;
         }
-        throw {
-            name: 'InternalParseException',
-            message: 'Error occurred while attempting to parse expression \'' + expressionString + '\' at position ' + pos + '. Message: ' + message
-        };
+
+        var error = new Error('Error occurred while attempting to parse expression \'' + expressionString + '\' at position ' + pos + '. Message: ' + message);
+        error.name = 'InternalParseException';
+        error.position = pos;
+
+        throw error;
     }
 
     function toString(token) {
@@ -1759,19 +1757,19 @@ function tokenize(inputData) {
                         break;
                     case '&':
                         if (!isTwoCharToken(_TokenKind.TokenKind.SYMBOLIC_AND)) {
-                            throw {
-                                name: 'SpelParseException',
-                                message: 'Missing character \'&\' in expression (' + expressionString + ') at position ' + pos
-                            };
+                            var error = new Error('Missing character \'&\' in expression (' + expressionString + ') at position ' + pos);
+                            error.name = 'SpelParseException';
+                            error.position = pos;
+                            throw error;
                         }
                         pushPairToken(_TokenKind.TokenKind.SYMBOLIC_AND);
                         break;
                     case '|':
                         if (!isTwoCharToken(_TokenKind.TokenKind.SYMBOLIC_OR)) {
-                            throw {
-                                name: 'SpelParseException',
-                                message: 'Missing character \'|\' in expression (' + expressionString + ') at position ' + pos
-                            };
+                            var _error = new Error('Missing character \'|\' in expression (' + expressionString + ') at position ' + pos);
+                            _error.name = 'SpelParseException';
+                            _error.position = pos;
+                            throw _error;
                         }
                         pushPairToken(_TokenKind.TokenKind.SYMBOLIC_OR);
                         break;
@@ -1837,15 +1835,19 @@ function tokenize(inputData) {
                         pos += 1; // will take us to the end
                         break;
                     case '\\':
-                        throw {
-                            name: 'SpelParseException',
-                            message: 'Unexpected escape character in expression (' + expressionString + ') at position ' + pos
-                        };
+                        {
+                            var _error2 = new Error('Unexpected escape character in expression (' + expressionString + ') at position ' + pos);
+                            _error2.name = 'SpelParseException';
+                            _error2.position = pos;
+                            throw _error2;
+                        }
                     default:
-                        throw {
-                            name: 'SpelParseException',
-                            message: 'Cannot handle character \'' + ch + '\' in expression (' + expressionString + ') at position ' + pos
-                        };
+                        {
+                            var _error3 = new Error('Cannot handle character \'' + ch + '\' in expression (' + expressionString + ') at position ' + pos);
+                            _error3.name = 'SpelParseException';
+                            _error3.position = pos;
+                            throw _error3;
+                        }
                 }
             }
         }
@@ -1868,10 +1870,10 @@ function tokenize(inputData) {
                 }
             }
             if (ch.charCodeAt(0) === 0) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Non-terminating quoted string in expression (' + expressionString + ') at position ' + pos
-                };
+                var error = new Error('Non-terminating quoted string in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
         }
         pos += 1;
@@ -1894,10 +1896,10 @@ function tokenize(inputData) {
                 }
             }
             if (ch.charCodeAt(0) === 0) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Non-terminating double-quoted string in expression (' + expressionString + ') at position ' + pos
-                };
+                var error = new Error('Non-terminating double-quoted string in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             }
         }
         pos += 1;
@@ -1937,10 +1939,24 @@ function tokenize(inputData) {
                 pos += 1;
             } while (isHexadecimalDigit(toProcess[pos]));
             if (isChar('L', 'l')) {
-                pushHexIntToken(subarray(start + 2, pos), true, start, pos);
+                var data = subarray(start + 2, pos);
+                if (data.length === 0) {
+                    var error = new Error('Not a long in expression (' + expressionString + ') at position ' + pos);
+                    error.name = 'SpelParseException';
+                    error.position = pos;
+                    throw error;
+                }
+                pushHexIntToken(data, true, start, pos);
                 pos += 1;
             } else {
-                pushHexIntToken(subarray(start + 2, pos), false, start, pos);
+                var _data = subarray(start + 2, pos);
+                if (_data.length === 0) {
+                    var _error4 = new Error('Not an int in expression (' + expressionString + ') at position ' + pos);
+                    _error4.name = 'SpelParseException';
+                    _error4.position = pos;
+                    throw _error4;
+                }
+                pushHexIntToken(_data, false, start, pos);
             }
             return;
         }
@@ -1979,10 +1995,10 @@ function tokenize(inputData) {
         if (isChar('L', 'l')) {
             if (isReal) {
                 // 3.4L - not allowed
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Real cannot be long in expression (' + expressionString + ') at position ' + pos
-                };
+                var _error5 = new Error('Real cannot be long in expression (' + expressionString + ') at position ' + pos);
+                _error5.name = 'SpelParseException';
+                _error5.position = pos;
+                throw _error5;
             }
             pushIntToken(subarray(start, endOfNumber), true, start, endOfNumber);
             pos += 1;
@@ -2063,15 +2079,15 @@ function tokenize(inputData) {
     function pushHexIntToken(data, isLong, start, end) {
         if (data.length === 0) {
             if (isLong) {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Not a long in expression (' + expressionString + ') at position ' + pos
-                };
+                var error = new Error('Not a long in expression (' + expressionString + ') at position ' + pos);
+                error.name = 'SpelParseException';
+                error.position = pos;
+                throw error;
             } else {
-                throw {
-                    name: 'SpelParseException',
-                    message: 'Not an int in expression (' + expressionString + ') at position ' + pos
-                };
+                var _error6 = new Error('Not an int in expression (' + expressionString + ') at position ' + pos);
+                _error6.name = 'SpelParseException';
+                _error6.position = pos;
+                throw _error6;
             }
         }
         if (isLong) {

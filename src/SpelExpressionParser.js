@@ -104,22 +104,17 @@ export var SpelExpressionParser = function () {
 
 
     function parse(expression, context) {
-        try {
-            expressionString = expression;
-            tokenStream = Tokenizer.tokenize(expression);
-            tokenStreamLength = tokenStream.length;
-            tokenStreamPointer = 0;
-            constructedNodes = [];
-            var ast = eatExpression();
-            if (moreTokens()) {
-                raiseInternalException(peekToken().startPos, 'MORE_INPUT', nextToken().toString());
-            }
-            //Assert.isTrue(this.constructedNodes.isEmpty());
-            return ast;
+        expressionString = expression;
+        tokenStream = Tokenizer.tokenize(expression);
+        tokenStreamLength = tokenStream.length;
+        tokenStreamPointer = 0;
+        constructedNodes = [];
+        var ast = eatExpression();
+        if (moreTokens()) {
+            raiseInternalException(peekToken().startPos, 'MORE_INPUT', nextToken().toString());
         }
-        catch (e) {
-            throw e.message;
-        }
+        //Assert.isTrue(this.constructedNodes.isEmpty());
+        return ast;
     }
 
     //	expression
@@ -961,10 +956,12 @@ export var SpelExpressionParser = function () {
         if (actual) {
             message += '\nActual: ' + actual;
         }
-        throw {
-            name: 'InternalParseException',
-            message: 'Error occurred while attempting to parse expression \'' + expressionString + '\' at position ' + pos + '. Message: ' + message
-        };
+
+        let error = new Error('Error occurred while attempting to parse expression \'' + expressionString + '\' at position ' + pos + '. Message: ' + message);
+        error.name = 'InternalParseException';
+        error.position = pos;
+
+        throw error;
     }
 
     function toString(token) {
